@@ -10,7 +10,7 @@ public class ProductRepository {
         Product product = new Product();
 
         // DB 연결
-        Connection connection = DriverManager.getConnection("jdbc:h2:mem:springcoredb", "sa", "");
+        Connection connection = DriverManager.getConnection("jdbc:h2:mem:springcoredb", "bs", "sb");
         // DB Query 작성
         PreparedStatement ps = connection.prepareStatement("select * from product where id = ?");
         ps.setLong(1, id);
@@ -35,7 +35,7 @@ public class ProductRepository {
     public List<Product> getProducts() throws SQLException {
         ArrayList<Product> products = new ArrayList<>();
         // DB 연결
-        Connection connection = DriverManager.getConnection("jdbc:h2:mem:springcoredb", "sa", "");
+        Connection connection = DriverManager.getConnection("jdbc:h2:mem:springcoredb", "bs", "sb");
         // DB Query 작성 및 실행
         Statement stmt = connection.createStatement();
         ResultSet rs = stmt.executeQuery("select * from product");
@@ -65,7 +65,7 @@ public class ProductRepository {
         product.setModifiedAt(now);
 
         // DB 연결
-        Connection connection = DriverManager.getConnection("jdbc:h2:mem:springcoredb", "sa", "");
+        Connection connection = DriverManager.getConnection("jdbc:h2:mem:springcoredb", "bs", "sb");
         // DB Query 작성
         PreparedStatement ps = connection.prepareStatement("select max(id) as id from product");
         ResultSet rs = ps.executeQuery();
@@ -95,7 +95,7 @@ public class ProductRepository {
 
     public void updateProductMyPrice(Long id, int myPrice) throws SQLException {
         // DB 연결
-        Connection connection = DriverManager.getConnection("jdbc:h2:mem:springcoredb", "sa", "");
+        Connection connection = DriverManager.getConnection("jdbc:h2:mem:springcoredb", "bs", "sb");
         // DB Query 작성
         PreparedStatement ps = connection.prepareStatement("update product set myprice = ?, modified_at = ? where id = ?");
         ps.setInt(1, myPrice);
