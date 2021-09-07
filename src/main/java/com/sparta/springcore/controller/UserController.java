@@ -42,4 +42,18 @@ public class UserController {
         userService.registerUser(requestDto);
         return "redirect:/";
     }
+
+    // 인가받지 않은 경우
+    @GetMapping("/user/forbidden")
+    public String forbidden() {
+        return "forbidden";
+    }
+
+    @GetMapping("/user/kakao/callback")
+    public String kakaoLogin(String code) {
+        // authorizedCode: 카카오 서버로부터 받은 인가 코드
+        userService.kakaoLogin(code);
+
+        return "redirect:/";
+    }
 }
