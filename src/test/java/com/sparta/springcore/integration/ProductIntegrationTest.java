@@ -7,17 +7,16 @@ import com.sparta.springcore.service.ProductService;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-
-import java.util.List;
+import org.springframework.data.domain.Page;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT) // PORT는 랜덤
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-@TestMethodOrder(MethodOrderer.OrderAnnotation.class) // 순서대로 가능하도록.
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class ProductIntegrationTest {
-    @Autowired // DI 주입
+    @Autowired
     ProductService productService;
 
     Long userId = 100L;
@@ -57,7 +56,7 @@ class ProductIntegrationTest {
     @DisplayName("신규 등록된 관심상품의 희망 최저가 변경")
     void test2() {
         // given
-        Long productId = this.createdProduct.getId(); // 이 클래스의 createdProduct 객체 id를 가져온다
+        Long productId = this.createdProduct.getId();
         int myPrice = 70000;
         ProductMypriceRequestDto requestDto = new ProductMypriceRequestDto(myPrice);
 
@@ -72,7 +71,7 @@ class ProductIntegrationTest {
         assertEquals(this.createdProduct.getLink(), product.getLink());
         assertEquals(this.createdProduct.getLprice(), product.getLprice());
         assertEquals(myPrice, product.getMyprice());
-        this.updatedMyPrice = myPrice; // 멤버 변수에 저장해줌.
+        this.updatedMyPrice = myPrice;
     }
 
     @Test
@@ -80,8 +79,13 @@ class ProductIntegrationTest {
     @DisplayName("회원이 등록한 모든 관심상품 조회")
     void test3() {
         // given
+        int page = 0;
+        int size = 10;
+        String sortBy = "id";
+        boolean isAsc = false;
+
         // when
-        List<Product> productList = productService.getProducts(userId);
+        Page<Product> productList = productService.getProducts(userId, page, size, sortBy, isAsc);
 
         // then
         // 1. 전체 상품에서 테스트에 의해 생성된 상품 찾아오기 (상품의 id 로 찾음)

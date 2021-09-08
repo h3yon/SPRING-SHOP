@@ -1,13 +1,17 @@
 package com.sparta.springcore.service;
 
-import com.sparta.springcore.repository.ProductRepository;
 import com.sparta.springcore.dto.ProductMypriceRequestDto;
 import com.sparta.springcore.dto.ProductRequestDto;
 import com.sparta.springcore.model.Product;
+import com.sparta.springcore.repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
+import javax.transaction.Transactional;
 import java.util.List;
 
 @Service
@@ -24,8 +28,13 @@ public class ProductService {
     }
 
     // 회원 ID 로 등록된 모든 상품 조회
-    public List<Product> getProducts(Long userId) {
-        return productRepository.findAllByUserId(userId);
+    public Page<Product> getProducts(Long userId, int page, int size, String sortBy, boolean isAsc) {
+        Sort.Direction direction = isAsc ? Sort.Direction.ASC : Sort.Direction.DESC;
+        Sort sort = Sort.by(direction, sortBy);
+        // 우와 JPA가 총페이지, 페이지에 필요한 정보를 다 내려줌..........
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        return productRepository.findAllByUserId(userId, pageable);
     }
 
     @Transactional // 메소드 동작이 SQL 쿼리문임을 선언합니다.
@@ -36,33 +45,28 @@ public class ProductService {
         return product;
     }
 
-
     @Transactional // 메소드 동작이 SQL 쿼리문임을 선언합니다.
     public Product updateProduct(Long id, ProductMypriceRequestDto requestDto) {
-        Product product = productRepository.findById(id)
-                .orElseThrow(() -> new NullPointerException("해당 아이디가 존재하지 않습니다.")); // Optional이기 때문에.
+        Product product = productRepository.findById(id).orElseThrow(
+                () -> new NullPointerException("해당 아이디가 존재하지 않습니다.")
+        );
 
-        /**
-         * 1번째 방법(@Transactional X)
-         */
-//        int myPrice = requestDto.getMyprice();
-//        product.setMyprice(myPrice);
-//        productRepository.save(myPrice); // JPA가 자동으로 업데이트 해줌
-
-        /**
-         * 2번째 방법(@Transactional O)
-         */
+        // 변경될 관심 가격이 유효한지 확인합니다.
         int myPrice = requestDto.getMyprice();
         if (myPrice < MIN_PRICE) {
             throw new IllegalArgumentException("유효하지 않은 관심 가격입니다. 최소 " + MIN_PRICE + " 원 이상으로 설정해 주세요.");
         }
-        product.updateMyPrice(myPrice);
 
+        product.updateMyPrice(myPrice);
         return product;
     }
 
     // 모든 상품 조회 (관리자용)
-    public List<Product> getAllProducts() {
-        return productRepository.findAll();
+    public Page<Product> getAllProducts(int page, int size, String sortBy, boolean isAsc) {
+        Sort.Direction direction = isAsc ? Sort.Direction.ASC : Sort.Direction.DESC;
+        Sort sort = Sort.by(direction, sortBy);
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        return productRepository.findAll(pageable);
     }
 }
