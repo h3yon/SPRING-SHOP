@@ -172,7 +172,7 @@ public class UserController {
             user1.setRole(UserRole.ADMIN);
         }
 
-        // user1 을 저장
+        // update 방법 1. user1 을 저장
         userRepository.save(user1);
 
         System.out.println(user1);
@@ -188,7 +188,7 @@ public class UserController {
 
     @GetMapping("/user/test/update/3")
     @ResponseBody
-    @Transactional
+    @Transactional // 2. Transactional만 있으면 알아서 변경사항 찾아서 변경해줌
     public void updateUse3() {
         // 테스트 회원 "user1" 생성
         createTestUser1();
