@@ -17,7 +17,7 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.List;
 
-@Component // 기동할 때 이 클래스의 함수 실행 (ApplicationRunner까지 implement)
+//@Component // 기동할 때 이 클래스의 함수 실행 (ApplicationRunner까지 implement)
 public class TestDataRunner implements ApplicationRunner {
 
     @Autowired
