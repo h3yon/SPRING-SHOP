@@ -1,6 +1,6 @@
 #FileLock
-#Fri Sep 10 00:56:59 KST 2021
-hostName=localhost
-id=17bcb46ca13c8e24fcaa74635b03e1001b269e82432
+#Thu Sep 09 16:31:47 UTC 2021
+server=218.38.137.28\:60744
+hostName=218.38.137.28
 method=file
-server=localhost\:60448
+id=17bcb613e39e4081cce4ea8f2d286e25a4c3a35506c
