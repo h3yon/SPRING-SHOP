@@ -1,6 +1,7 @@
 package com.sparta.springcore.controller;
 
 import com.sparta.springcore.dto.FolderCreateRequestDto;
+import com.sparta.springcore.exception.ApiException;
 import com.sparta.springcore.model.Folder;
 import com.sparta.springcore.model.Product;
 import com.sparta.springcore.model.User;
@@ -8,6 +9,8 @@ import com.sparta.springcore.security.UserDetailsImpl;
 import com.sparta.springcore.service.FolderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
@@ -46,5 +49,20 @@ public class FolderController {
                                              @AuthenticationPrincipal UserDetailsImpl userDetails) {
         page = page - 1;
         return folderService.getProductsOnFolder(userDetails.getUser(), page, size, sortBy, isAsc, folderId);
+    }
+
+    @ExceptionHandler({ IllegalArgumentException.class })
+    // exception 발생 시 여기에서 다루겠다
+    public ResponseEntity<Object> handle(IllegalArgumentException ex) {
+        ApiException apiException = new ApiException(
+                ex.getMessage(),
+                // HTTP 400 -> Client Error
+                HttpStatus.BAD_REQUEST
+        );
+
+        return new ResponseEntity<>(
+                apiException,
+                HttpStatus.BAD_REQUEST
+        );
     }
 }

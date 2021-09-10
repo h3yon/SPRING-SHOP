@@ -1,5 +1,6 @@
 package com.sparta.springcore.service;
 
+import com.sparta.springcore.exception.ApiRequestException;
 import com.sparta.springcore.model.Folder;
 import com.sparta.springcore.model.Product;
 import com.sparta.springcore.model.User;
@@ -11,6 +12,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+
+import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,19 +36,27 @@ public class FolderService {
         return folderRepository.findAllByUser(user);
     }
 
+    @Transactional(readOnly = false)
     public List<Folder> createFolders(List<String> folderNameList, User user) {
-
-        List<Folder> existFolderList = folderRepository.findAllByUserAndNameIn(user, folderNameList);
 
         List<Folder> folderList = new ArrayList<>();
 
         for (String folderName : folderNameList) {
-            if(!isExistFolderName(folderName, existFolderList)) {
-                Folder folder = new Folder(folderName, user);
-                folderList.add(folder);
+            // 1) DB 에 폴더명이 folderName 인 폴더가 존재하는지?
+            Folder folderInDB = folderRepository.findByName(folderName);
+            if (folderInDB != null) {
+                // DB 에 중복 폴더명 존재한다면 Exception 발생시킴
+                throw new ApiRequestException("중복된 폴더명 ('" + folderName + "') 을 삭제하고 재시도해 주세요!");
             }
+
+            // 2) 폴더를 DB 에 저장
+            Folder folder = new Folder(folderName, user);
+            folder = folderRepository.save(folder);
+
+            // 3) folderList 에 folder Entity 객체를 추가
+            folderList.add(folder);
         }
-        folderList = folderRepository.saveAll(folderList);
+
         return folderList;
     }
 
