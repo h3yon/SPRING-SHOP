@@ -1,0 +1,105 @@
+package com.sparta.springcore.testdata;
+
+import com.sparta.springcore.dto.ItemDto;
+import com.sparta.springcore.model.Product;
+import com.sparta.springcore.model.User;
+import com.sparta.springcore.model.UserRole;
+import com.sparta.springcore.repository.ProductRepository;
+import com.sparta.springcore.repository.UserRepository;
+import com.sparta.springcore.service.UserService;
+import com.sparta.springcore.util.NaverShopSearch;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.ApplicationArguments;
+import org.springframework.boot.ApplicationRunner;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Component;
+
+import java.util.ArrayList;
+import java.util.List;
+
+//@Component // 기동할 때 이 클래스의 함수 실행 (ApplicationRunner까지 implement)
+public class TestDataRunner implements ApplicationRunner {
+
+    @Autowired
+    UserService userService;
+
+    @Autowired
+    ProductRepository productRepository;
+
+    @Autowired
+    UserRepository userRepository;
+
+    @Autowired
+    PasswordEncoder passwordEncoder;
+
+    @Autowired
+    NaverShopSearch naverShopSearch;
+
+    /**
+     * 그 동안 사용한 방식 final Password password~
+     * passwordEncoder를 가져다 사용했었음. DI 받아지면 멤버 변수로 채워지는.
+     * 여기서는 왜 사용하지 않나? 스프링에서는 이걸 권장했었음.
+     * 어차피 test이기 때문에 그냥 구현
+     *
+     * @param passwordEncoder
+     */
+//    @Autowired
+//    public TestDataRunner(PasswordEncoder passwordEncoder) {
+//        this.passwordEncoder = passwordEncoder;
+//    }
+
+    private static final int MIN_PRICE = 100;
+
+    @Override
+    public void run(ApplicationArguments args) throws Exception {
+        // 테스트 User 생성
+        User testUser = new User("르탄이", passwordEncoder.encode("123"), "user1@spartacodingclub.kr", UserRole.USER);
+        testUser = userRepository.save(testUser);
+
+        // 테스트 User 의 관심상품 등록
+        // 검색어 당 관심상품 10개 등록
+        createTestData(testUser, "신발");
+        createTestData(testUser, "과자");
+        createTestData(testUser, "키보드");
+        createTestData(testUser, "휴지");
+        createTestData(testUser, "휴대폰");
+        createTestData(testUser, "앨범");
+        createTestData(testUser, "헤드폰");
+        createTestData(testUser, "이어폰");
+        createTestData(testUser, "노트북");
+        createTestData(testUser, "무선 이어폰");
+        createTestData(testUser, "모니터");
+    }
+
+    private void createTestData(User user, String searchWord) {
+        // 네이버 쇼핑 API 통해 상품 검색
+        String jsonString = naverShopSearch.search(searchWord);
+        List<ItemDto> itemDtoList = naverShopSearch.fromJSONtoItems(jsonString);
+
+        List<Product> productList = new ArrayList<>();
+
+        for (ItemDto itemDto : itemDtoList) {
+            Product product = new Product();
+            // 관심상품 저장 사용자
+            product.setUserId(user.getId());
+            // 관심상품 정보
+            product.setTitle(itemDto.getTitle());
+            product.setLink(itemDto.getLink());
+            product.setImage(itemDto.getImage());
+            product.setLprice(itemDto.getLprice());
+
+            // 희망 최저가 랜덤값 생성
+            // 최저 (100원) ~ 최대 (상품의 현재 최저가 + 10000원)
+            int myPrice = getRandomNumber(MIN_PRICE, itemDto.getLprice() + 10000);
+            product.setMyprice(myPrice);
+
+            productList.add(product);
+        }
+
+        productRepository.saveAll(productList);
+    }
+
+    public int getRandomNumber(int min, int max) {
+        return (int) ((Math.random() * (max - min)) + min);
+    }
+}
